@@ -1,8 +1,17 @@
 const { Pool, types } = require('pg');
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (!process.env.DATABASE_URL) {
+  console.error('ERROR: DATABASE_URL is not set');
+  process.exit(1);
+}
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ...(isProduction && {
+    ssl: { rejectUnauthorized: false },
+  }),
 });
 
 // Return DATE columns as plain YYYY-MM-DD strings (not JS Date objects)
