@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { initDatabase } = require('./database/init');
+const { connectWithRetry } = require('./database/db');
 
 const authRoutes         = require('./routes/auth');
 const workerRoutes       = require('./routes/workers');
@@ -42,6 +43,7 @@ app.use((err, req, res, next) => {
 // ── Start ──────────────────────────────────────────────────────────────────────
 async function start() {
   try {
+    await connectWithRetry();
     await initDatabase();
     app.listen(PORT, () => {
       console.log(`🚀 Norfach API running on port ${PORT}`);
