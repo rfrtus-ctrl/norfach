@@ -64,6 +64,7 @@ async function initDatabase() {
         salary_type  TEXT DEFAULT 'hourly' CHECK(salary_type IN ('hourly','monthly','project')),
         job_type     TEXT DEFAULT 'full-time' CHECK(job_type IN ('full-time','part-time','project','temporary')),
         status       TEXT DEFAULT 'active' CHECK(status IN ('active','paused','closed')),
+        requirements TEXT,
         required_skills TEXT[],
         created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -88,6 +89,11 @@ async function initDatabase() {
         UNIQUE(user_id, item_type, item_id)
       );
     `);
+    // Idempotent migrations for columns added after initial deploy
+    await client.query(`
+      ALTER TABLE job_posts ADD COLUMN IF NOT EXISTS requirements TEXT;
+    `);
+
     console.log('✅ Database schema ready');
   } catch (err) {
     console.error('❌ Database init error:', err.message);
